@@ -1,12 +1,8 @@
 # clean current work space
 rm(list=ls(all=T))
-# set options
 options(stringsAsFactors = F)         # no automatic data transformation
 options("scipen" = 100, "digits" = 4) # suppress math annotation
-# install libraries
 #install.packages(c())
-#Package you'll need
-#Things I'll definitely use
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -15,11 +11,189 @@ library(haven)
 library(descr)
 library(car)
 library(RColorBrewer)
-library(likert) 
+library(likert)
 library(colorspace)
+#####
+#AAMC Data - was unable to download files as CSV. Will manually put dat in here
+#AAMC 2021-2022 Matriculant data
+  #Table A9 From AAMC 2021 MAtriculant Data
+    A92021AIANonly <- c(39, 44, 36, 40)
+    A92021AIANBlackcombo <- c(15, 14, 9, 13)
+    A92021AIANWhitecombo <- c(106, 102, 112, 111)
+  #Manually use variables from Table 14.3 from 2021 AAMC Data - do not use the year 2017-2018 so tables align
+    A14.3AIANincombo <- c(179, 186, 212, 187)
+    A14.3AIANtotal <- c(218, 230, 248, 227)
+  #Use data from A9 and A14.3 to make a variable of AIAN in a combination other than white
+    AIANincomboanotherrace <- A14.3AIANincombo - A92021AIANWhitecombo - A92021AIANBlackcombo
+
+  # Table of raw numbers of Native matriculants by race/ethnicity
+    Tablenativematriculants <- rbind(A92021AIANonly, A92021AIANBlackcombo, A92021AIANWhitecombo, AIANincomboanotherrace, A14.3AIANtotal)
+      colnames(Tablenativematriculants) <- c("2018-2019", "2019-2020", "2020-2021", "2021-2022")
+      rownames(Tablenativematriculants) <- c("AI/AN Only", "AI/AN, Black","AI/AN, White", "AI/AN, Another race", "AI/AN total")
+    Tablenativematriculants
+    View(Tablenativematriculants)
+  
+  #Table of Native Matriculates proportionally by race
+    Tablenativematriculantsproportional <- rbind(A92021AIANonly, A92021AIANBlackcombo, A92021AIANWhitecombo, AIANincomboanotherrace)
+      Tablenativematriculantsproportional[1,] <- 100 * Tablenativematriculantsproportional[1,] / A14.3AIANtotal
+      Tablenativematriculantsproportional[2,] <- 100 * Tablenativematriculantsproportional[2,] / A14.3AIANtotal
+      Tablenativematriculantsproportional[3,] <- 100 * Tablenativematriculantsproportional[3,] / A14.3AIANtotal
+      Tablenativematriculantsproportional[4,] <- 100 * Tablenativematriculantsproportional[4,] / A14.3AIANtotal
+      colnames(Tablenativematriculantsproportional) <- c("2018-2019", "2019-2020", "2020-2021", "2021-2022")
+     rownames(Tablenativematriculantsproportional) <- c("AI/AN Only", "AI/AN, Black","AI/AN, White", "AI/AN, Another race")
+    Tablenativematriculantsproportional
+    View(Tablenativematriculantsproportional)
+  
+  #Table of Native matriculants proportional to all medical students
+  Totalmedstudentmatriculants <- c(21662, 21869, 22239, 22665)
+  Tablenativematriculantspopulation <- rbind(A92021AIANonly, A92021AIANBlackcombo, 
+                                                                                    A92021AIANWhitecombo, AIANincomboanotherrace,                                                              A14.3AIANtotal)
+    Tablenativematriculantspopulation
+    Tablenativematriculantspopulation[1,] <- 100 * Tablenativematriculantspopulation[1,] / Totalmedstudentmatriculants
+    Tablenativematriculantspopulation[2,] <- 100 * Tablenativematriculantspopulation[2,] / Totalmedstudentmatriculants
+    Tablenativematriculantspopulation[3,] <- 100 * Tablenativematriculantspopulation[3,] / Totalmedstudentmatriculants
+    Tablenativematriculantspopulation[4,] <- 100 * Tablenativematriculantspopulation[4,] / Totalmedstudentmatriculants
+    Tablenativematriculantspopulation[5,] <- 100 * Tablenativematriculantspopulation[5,] / Totalmedstudentmatriculants
+    Tablenativematriculantspopulation
+      colnames(Tablenativematriculantspopulation) <- c("2018-2019", "2019-2020", "2020-2021", "2021-2022")
+      rownames(Tablenativematriculantspopulation) <- c("AI/AN Only", "AI/AN, Black","AI/AN, White", "AI/AN, Another race", "AI/AN total")
+      Tablenativematriculantspopulation
+      View(Tablenativematriculantspopulation)
+      
+  # Table and graph for paper, less subgroups than above
+  # Shows Matriculants AI/AN alone, in combo, and total per year
+      Nativematriculantsaloneincombo <- rbind(A92021AIANonly, A14.3AIANincombo, A14.3AIANtotal)
+      Nativematriculantsaloneincombo
+      Nativematriculantsaloneincombo[1,] <- 100 * Nativematriculantsaloneincombo[1,] / Totalmedstudentmatriculants
+      Nativematriculantsaloneincombo[2,] <- 100 * Nativematriculantsaloneincombo[2,] / Totalmedstudentmatriculants
+      Nativematriculantsaloneincombo[3,] <- 100 * Nativematriculantsaloneincombo[3,] / Totalmedstudentmatriculants
+      Nativematriculantsaloneincombo
+      colnames(Nativematriculantsaloneincombo) <- c("2018-2019", "2019-2020", "2020-2021", "2021-2022")
+      rownames(Nativematriculantsaloneincombo) <- c("AI/AN Only", "AI/AN in combo", "AI/AN total")
+      Nativematriculantsaloneincombo
+      View(Nativematriculantsaloneincombo)
+      
+    # Barplot
+      #Reset so raw numbers and not proportions
+      Nativematriculantsaloneincombo <- rbind(A92021AIANonly, A14.3AIANincombo, A14.3AIANtotal, deparse.level = 1)
+      Nativematriculantsaloneincombo
+    barplot(Nativematriculantsaloneincombo, 
+            beside = T,
+            main = "Native medical school Matriculants by year",
+            names.arg = c("2018-2019", "2019-2020", "2020-2021", "2021-2022"),
+            legend.text = c("AI/AN alone", "AI/AN in combo", "AI/AN total"),
+            args.legend = list(x = "bottomleft", bty = 'n'),
+            ylab = "Number of students"
+            )
+
+# 2020 Fall Applicant, Matriculant, and Enrollment Data Tables
+    years <- c(2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020)
+    # Page 6 - applicants 2013-2020
+    AIANapplicants <- c(425, 449, 463, 553, 508, 559, 586, 561)
+    Totalapplicants <- c(48014, 49480, 52549, 53042, 51680, 52777, 53370, 53030)
+    AIANpercentapplicants <- 100 * AIANapplicants / Totalapplicants
+    AIANpercentapplicants
+    # Page 12 - Matriculants from 2013-2020
+    AIANmatriculants <- c(173, 202, 196, 194, 205, 218, 230, 248)
+    Totalmatriculants <- c(20055, 20343, 20631, 21030, 21338, 21622, 21869, 22239)
+    PercentAIANmatriculants <- 100 * AIANmatriculants / Totalmatriculants
+    PercentAIANmatriculants
+    
+# 2021 Matriculation data Table A-12 Applicants, First Time applicants, Acceptees, Matriculatns 2018-2019 -> 2020-2021 by Race (alone)
+    years <- c("2018-2019", "2019-2020", "2020-2021", "2021-2022")
+    menAIANapplicants <- c(58, 40, 31, 46)    
+    menAIANfirsttimeapplicants <- c(37, 27, 24, 35)
+    menAIANacceptees <- c(23, 23, 15, 20)
+    menAIANmatriculants <- c(22, 22, 15, 18)
+
+    womenAIANapplicants <- c(51, 49, 41, 59)
+    womenAIANfirsttimeapplicants <- c(38, 32, 28, 51)
+    womenAIANacceptees <- c(21, 23, 22, 26)
+    womenAIANmatriculants <- c(17, 22, 21, 22)
+    
+    totalAIANapplicants <- menAIANapplicants + womenAIANapplicants
+    totalAIANapplicants
+    totalaianfirsttimeapplicants <- menAIANfirsttimeapplicants + womenAIANfirsttimeapplicants
+    totalaianfirsttimeapplicants
+    totalaianacceptees <- menAIANacceptees + womenAIANacceptees
+    totalaianacceptees
+    totalaianmatriculants <- menAIANmatriculants + womenAIANmatriculants
+    totalaianmatriculants
+    
+    sum(womenAIANmatriculants)
+    sum(menAIANmatriculants)
+    
+    AIANacceptancerate <- 100 * totalaianacceptees / totalAIANapplicants
+    AIANacceptancerate
+    
+    totalmedschoolapplicants <- c(52777, 53370, 53030, 62432)
+    totalmedschoolfirsttimeapplicants <- c(38483, 39237, 38581, 46750)
+    totalmedschoolacceptees <- c(22483, 22687, 23105, 23712)
+    totalmedschoolmatriculants <- c(21622, 21869, 22239, 22665)
+    
+    totalacceptancerate <- 100 * totalmedschoolacceptees / totalmedschoolapplicants
+    totalacceptancerate
+    
+
+# Comparing 14-3 (race of matriculants) to Table 14-1 - (applicants) 2017-2018 through 2021-2022
+    years <- c("2017-2018", "2018-2019", "2019-2020", "2020-2021", "2021-2022")
+    # Table 14.1 - applicants
+    AIANapplicantsalone <- c(100, 109, 89, 73, 105)
+    AIANapplicantscombo <- c(408, 450, 497, 488, 584)
+    totalAIANapplicants <- AIANapplicantsalone + AIANapplicantscombo
+    totalapplicants <- c(51580, 52777, 53370, 53030, 62432)
+    
+    #Table 14.3 - matriculants
+    AIANmatriculantsalone <- c(42, 39, 44, 36, 40)
+    AIANmatriculantsincombo <- c(163, 179, 186, 212, 187)
+    AIANmatriculantstotal <- AIANmatriculantsalone + AIANmatriculantsincombo
+    Totalmatriculants <- c(21338, 21622, 21869, 22239, 22665)
+    
+    AIANmatriculantpercent <-  100 * AIANmatriculantstotal / Totalmatriculants
+    AIANmatriculantpercent
+    # These "rates" are the matriculants divided by the applicants. This is not a true acceptance rate
+    AIANalonerate <- 100 * AIANmatriculantsalone / AIANapplicantsalone
+    AIANalonerate
+    AIANcomborate <- 100 * AIANmatriculantsincombo / AIANapplicantscombo
+    AIANcomborate    
+
+    
+# Table A-18 MCAT and GPA for applicants and matriculants by race (alone only) 2021-2022
+    MCAT <- c("CPBS", "CARS", "BBLS", "PSBB", "Total")
+    AIANapplicantmcat <- c(124, 124.2, 124.6, 125.2, 498)
+      AIANapplicantmcatstd <- c(2.7, 2.5, 2.8, 2.9, 9.4)
+    totalapplicantmcat <- c(126.3, 125.7, 126.7, 127.3, 505.9)
+      totalapplicantmcatstd <- c(2.9, 2.8, 2.8, 2.8, 9.7)    
+    
+    AIANmatriculantmcat <- c(125.5, 125.4, 126.3, 126.6, 503.8)
+      AIANmatriculantmcatstd <- c(2.8, 2.4, 2.4, 2.6, 7.9)
+    totalmatriculantmcat <- c(127.9, 127, 128.2, 128.8, 511.9)
+      totalmatriculantmcatstd <- c(2.2, 2.3, 2.1, 2, 6.6)
+      
+    mcattable <- rbind(AIANapplicantmcat, totalapplicantmcat, AIANmatriculantmcat, totalmatriculantmcat)
+      rownames(mcattable) <- c("AI/AN Applicants", "All Applicnats", "AI/AN Matriculants", "All Matriculants")
+      colnames(mcattable) <- MCAT
+    mcattable  
+      
+    GPA <- c("Science", "Non-Science", "Total")
+    AIANapplicantGPA <- c(3.16, 3.58, 3.36)
+      AIANapplicantGPAstd <- c(0.58, 0.33, 0.41)
+    totalapplicantGPA <- c(3.48, 3.74, 3.59)
+      totalapplicantGPAstd <- c(0.44, 0.28, 0.34)
+    
+    AIANmatriculantgpa <- c(3.34, 3.66, 3.49)
+      AIANmatriculantgpastd <- c(0.43, 0.28, 0.33)
+    totalmatriculantgpa <- c(3.67, 3.83, 3.74)
+      totalmatriculantgpastd <- c(0.31, 0.21, 0.25)
+      
+    gpatable <- rbind(AIANapplicantGPA, totalapplicantGPA, AIANmatriculantgpa, totalmatriculantgpa)
+      rownames(gpatable) <- c("AI/AN Applicants", "All Applicnats", "AI/AN Matriculants", "All Matriculants")
+      colnames(gpatable) <- GPA
+    gpatable
+    
+
 ##### 
 #ANAMS survey data
-#Set the working directory. Using setwd, use the "Tab" key after each / to find your dataset
 #Read in data
 setwd('~/ANAMS/IHS paper/Paper/Spreadsheet Downloads/')
 ANAMSdata <- read.csv('ANAMS Survey_August 7, 2021 numeric.csv', na.strings = c("", "NA"))
@@ -28,12 +202,8 @@ stringdata <- read.csv('ANAMS Survey_August 7, 2021 string.csv', na.strings = c(
 # Store a matrix of questions
 Questionstring <- stringdata[c(1),]
 
-#View, show data structure, show summaries of variables
-str(ANAMSdata)
-summary(ANAMSdata)
-
 #Clean data, remove incomplete answers
-ANAMSdata <- ANAMSdata[3:nrow(ANAMSdata),] # Remove first two rows of data from qualtrics
+ANAMSdata <- ANAMSdata[3:nrow(ANAMSdata),] # Remove first two rows of data from qualtrics - this data is not response data
   ANAMSdata <- subset(x = ANAMSdata, subset = as.numeric(ANAMSdata[,5]) == 100) # Remove incomplete responses
   ANAMSdata <- subset(x = ANAMSdata, subset = as.numeric(ANAMSdata[,18]) == 1) # Remove those who did not consent
   ANAMSdata <- subset(x = ANAMSdata, subset = as.numeric(ANAMSdata[,19]) == 1) # Remove those who are not ANAMS members
@@ -49,10 +219,20 @@ stringdata <- stringdata[3:nrow(stringdata),] # Remove first two rows of data fr
 numresponses <- length(ANAMSdata[,1])
 numresponses
 
-#Q3 - How will I put ethnicity selections? Histogram? Q1 on qualtrics
-#add up all that have values in a category? Say that it includes double mentions
-#What is the percent that is just native
-#What percent is more than native?
+  #For subgroup analysis of only AI/AN
+    onlyaian <- subset(x = stringdata, subset = stringdata[,20] == "American Indian or Alaska Native (AI-AN)") # Remove those who are not ANAMS members
+    View(onlyaian)
+    onlyaiannum <- subset(x = ANAMSdata, subset = ANAMSdata[,20] == 1)
+    View(onlyaiannum)
+  
+  #For subgroup analysis of only AI/AN in combo with another race
+    aiancombo <- subset(x = stringdata, subset = stringdata[,20] != "American Indian or Alaska Native (AI-AN)") # Remove those who are not ANAMS members
+    View(aiancombo)
+    aiancombonum <- subset(x = ANAMSdata, subset = ANAMSdata[,20] != 1)
+    View(aiancombonum)
+  
+  
+#Q3 - Ethnicity
 table(stringdata[,c(20)])
 pie(table(stringdata[,c(20)]),main = stringdata[c(1),c(20)])
 freq(stringdata[,c(20)])
@@ -62,7 +242,19 @@ table(stringdata[,c(21)])
 barchart(stringdata[,c(21)])
 freq(stringdata[,c(21)])
 
-#Geographic Data
+freq(onlyaian[,c(21)])
+freq(aiancombo[,c(21)])
+
+  #Categorical stats Testing
+  a <- table(onlyaian[,c(21)])
+  b <- table(aiancombo[,c(21)])
+  gender <- rbind(a,b)
+  rownames(gender) <- c("AI/AN alone", "AI/AN in combination")
+  gender
+  #chisq.test(gender)
+  fisher.test(gender)
+  
+#Geographic Data - Not used in paper
 #Q5, Q8, Q10
 #Add in map of IHS territories
 #Add in IHS Clinic data from the website
@@ -79,7 +271,6 @@ freq(stringdata[,c(21)])
   pie(table(stringdata[,c(27)]), main = Questionstring[27], edges = 200,radius = 0.8, init.angle =  90, density = NULL,angle = 45, col = NULL, border = NULL, lty = NULL)
   freq(stringdata[,c(27)])
   barchart(stringdata[,c(27)])
-
 #Recode so that its state to IHS location
   geodat <- stringdata[, c(22, 25, 27)]
   geodat
@@ -267,7 +458,46 @@ pct.enrolled.tribal.members
         col = c("#CA0020", "#F4A582", "#92C5DE", "#0571B0"), 
         args.legend = list(x = 'topleft', bty = 'n')
             )
+    
+    freq(onlyaian[,c(23)])
+    freq(aiancombo[,c(23)])
 
+    #Statistics Testing
+    a <- table(onlyaian[,c(23)])
+     a
+    onlyaian.res <- a[7] + a[8]
+      onlyaian.res
+    onlyaian.nonres <- a[3] + a[4] + a[5] + a[6] + a[8]
+      onlyaian.nonres  
+    onlyaian.enrolledtm <- a[2] + a[5] + a[6] + a[7] + a[8]
+      onlyaian.enrolledtm
+    onlyaian.onlyaffiliateddes <- a[1] 
+      onlyaian.onlyaffiliateddes
+    
+    b <- table(aiancombo[,c(23)])
+      b
+    aiancombo.res <- b[7]
+      aiancombo.res
+    aiancombo.nonres <- b[4] + b[5] + b[6]
+      aiancombo.nonres
+    aiancombo.enrolledtm <- b[2] + b[3] + b[6]
+      aiancombo.enrolledtm
+    aiancombo.onlyaffiliateddes <- b[1]
+      aiancombo.onlyaffiliateddes
+    
+    onlyaian.demographic <- c(onlyaian.res, onlyaian.nonres, onlyaian.enrolledtm, onlyaian.onlyaffiliateddes)
+      onlyaian.demographic  
+    aiancombo.demographic <- c(aiancombo.res, aiancombo.nonres, aiancombo.enrolledtm, aiancombo.onlyaffiliateddes)
+      aiancombo.demographic  
+        
+    demographic <- rbind(onlyaian.demographic, aiancombo.demographic)
+    rownames(demographic) <- c("AI/AN alone", "AI/AN in combination")
+    colnames(demographic) <- c("Grew up on a reservation", "Grew up in a non-reservation Native community",
+                               "Enrolled tribal Member", "(Only selected) 'Affiliated with a tribe / descendent of'")
+    demographic
+    chisq.test(demographic)
+    fisher.test(demographic)
+        
 #Q7 - Select all that apply - where did you get healthcare growing up - Q4 in R
 table(stringdata[c(3:46),c(24)])
 freq(stringdata[,c(24)])
@@ -276,11 +506,36 @@ stringdata$Q4 <- gsub(",No","",stringdata$Q4)
 barplot(table(stringdata[c(3:46),c(24)]),main = stringdata[c(1),c(24)])
 freq(stringdata[c(3:46),c(24)])
 
+freq(onlyaian[,c(24)])
+freq(aiancombo[,c(24)])
+
+  #Statistics Testing
+  a <- table(onlyaian[,c(24)])
+  b <- table(aiancombo[,c(24)])
+  healthcare <- rbind(a,b)
+  rownames(healthcare) <- c("AI/AN alone", "AI/AN in combination")
+  healthcare
+  chisq.test(healthcare)
+  fisher.test(healthcare)
+
 #Q9 Degrees to be obtained
 table(stringdata[c(3:46),c(26)])
 pie(table(stringdata[c(3:46),c(26)]),main = stringdata[c(1),c(26)])
 freq(stringdata[,c(26)])
-    
+
+freq(onlyaian[,c(26)])
+freq(aiancombo[,c(26)])
+
+  #Statistics Testing
+  a <- table(onlyaian[,c(26)])
+  b <- table(aiancombo[,c(26)])
+  degree <- rbind(a,b)
+  degree[2,4] <- 0 # Manually set number of MD/Ph.D. from AI/AN in combo to zero, which is the result
+  rownames(degree) <- c("AI/AN alone", "AI/AN in combination")
+  degree
+  #chisq.test(degree)
+  fisher.test(degree) 
+   
 #Q11 - Med school tribal rotations available... multiple responses allowed - Q8 on qualtrics
 table(stringdata[,c(28)])
 freq(stringdata[,c(28)])
@@ -324,7 +579,30 @@ freq(stringdata[,c(28)])
         col = c("#CA0020", "#F4A582", "#92C5DE", "#0571B0"), 
         args.legend = list(x = 'topright', bty = 'n')
 )
-
+  
+  freq(onlyaian[,c(28)])
+  freq(aiancombo[,c(28)])
+  
+  #Statistics Testing
+  a <- table(onlyaian[,c(28)])
+    a[3] <- a[3] + a[4]    
+    a[4] <- a[4] + a[5]
+    a <- a[-5]
+    a # Note the above is not automated. It combines answers from multiple responses unique to this dataset
+      # Note - this also messes up the names. Will force change it back at the end
+  b <- table(aiancombo[,c(28)])
+    b[3] <- b[3]+b[4]
+    b[4] <- b[4] + b[5]
+    b <- b[-5]
+    b # Note the above is not automated. It combines answers from multiple responses unique to this dataset
+      # Note - this also messes up the names. Will reconcile that at the end
+  rotationopp <- rbind(a,b)
+  rownames(rotationopp) <- c("AI/AN alone", "AI/AN in combination")
+  colnames(rotationopp) <- c("I am not sure", "No", "Yes - at IHS", "Yes - at non-IHS tribal sites")
+  rotationopp
+  chisq.test(rotationopp)
+  fisher.test(rotationopp)
+  
 #Q12 - will you / did you complete a tribal rotation - Q9 on qualtrics
 table(stringdata[,c(29)])
 freq(stringdata[,c(29)])
@@ -337,6 +615,17 @@ freq(stringdata[,c(29)])
     ylab = "Percent %",
     ylim = c(0,0.45)
   )
+  freq(onlyaian[,c(29)])
+  freq(aiancombo[,c(29)])
+  
+  #Chi Squared Testing
+  a <- table(onlyaian[,c(29)])
+  b <- table(aiancombo[,c(29)])
+  trot <- rbind(a,b)
+  rownames(trot) <- c("AI/AN alone", "AI/AN in combination")
+  trot
+  chisq.test(trot)
+  fisher.test(trot)
   
 #Q13 - Did ability to complete tribal rotation influence where you went to school - Q10 on qualtrics
 table(stringdata[,c(30)])
@@ -350,10 +639,23 @@ freq(stringdata[,c(30)])
     ylab = "Percent %",
     ylim = c(0,0.45)
   )
-
+  freq(onlyaian[,c(30)])
+  freq(aiancombo[,c(30)])
+  
+  #Chi Squared Testing
+  a <- table(onlyaian[,c(30)])
+  b <- table(aiancombo[,c(30)])
+  trotinf <- rbind(a,b)
+  rownames(trotinf) <- c("AI/AN alone", "AI/AN in combination")
+  trotinf
+  chisq.test(trotinf)
+  fisher.test(trotinf)
+  
 #Make a plot that ranks by strong dis -> somewhat dis -> I don't know -> somewhat agree -> strongly agree
   #Set up the data
 matrixorderdat <- ANAMSdata[,31:41] 
+    matrixorderdat <- onlyaiannum[,31:41] # For analysis of only AI/AN alone, use this
+    matrixorderdat <- aiancombonum[,31:41] # For analysis of only AI/AN alone, use this
 View(matrixorderdat)
   #Note - 1 = strongly agree, 2 = somewhat agree, 3 = somewhat disagree, 4 = strongly disagree, 5 = I don't know
 q14 <- as.numeric(matrixorderdat$Q12_1)
@@ -640,31 +942,31 @@ q22 <- as.numeric(matrixorderdat$Q12_9)
   q22 <- subset(q22, !is.na(q22))
   q22
   table(q22)
-  q22strongagree <- gsub("2", "", q22)
+q22strongagree <- gsub("2", "", q22)
   q22strongagree <- gsub("3", "", q22strongagree)
   q22strongagree <- gsub("4", "", q22strongagree)
   q22strongagree <- gsub("5", "", q22strongagree)
   q22strongagree <-sum(as.numeric(subset(q22strongagree, !is.na(as.numeric(q22strongagree)))))
   q22strongagree
-  q22somewhatagree <- gsub("1", "", q22)
+q22somewhatagree <- gsub("1", "", q22)
   q22somewhatagree <- gsub("3", "", q22somewhatagree)
   q22somewhatagree <- gsub("4", "", q22somewhatagree)
   q22somewhatagree <- gsub("5", "", q22somewhatagree)
   q22somewhatagree <-sum(as.numeric(subset(q22somewhatagree, !is.na(as.numeric(q22somewhatagree)))))/2
   q22somewhatagree
-  q22somewhatdisagree <- gsub("1", "", q22)
+q22somewhatdisagree <- gsub("1", "", q22)
   q22somewhatdisagree <- gsub("2", "", q22somewhatdisagree)
   q22somewhatdisagree <- gsub("4", "", q22somewhatdisagree)
   q22somewhatdisagree <- gsub("5", "", q22somewhatdisagree)
   q22somewhatdisagree <-sum(as.numeric(subset(q22somewhatdisagree, !is.na(as.numeric(q22somewhatdisagree)))))/3
   q22somewhatdisagree
-  q22strongdisagree <- gsub("1", "", q22)
+q22strongdisagree <- gsub("1", "", q22)
   q22strongdisagree <- gsub("2", "", q22strongdisagree)
   q22strongdisagree <- gsub("3", "", q22strongdisagree)
   q22strongdisagree <- gsub("5", "", q22strongdisagree)
   q22strongdisagree <-sum(as.numeric(subset(q22strongdisagree, !is.na(as.numeric(q22strongdisagree)))))/4
   q22strongdisagree
-  q22idk <- gsub("1", "", q22)
+q22idk <- gsub("1", "", q22)
   q22idk <- gsub("2", "", q22idk)
   q22idk <- gsub("3", "", q22idk)
   q22idk <- gsub("4", "", q22idk)
@@ -710,7 +1012,7 @@ q24 <- as.numeric(matrixorderdat$Q12_11)
   q24 <- subset(q24, !is.na(q24))
   q24
   table(q24)
-  q24strongagree <- gsub("2", "", q24)
+q24strongagree <- gsub("2", "", q24)
   q24strongagree <- gsub("3", "", q24strongagree)
   q24strongagree <- gsub("4", "", q24strongagree)
   q24strongagree <- gsub("5", "", q24strongagree)
@@ -817,6 +1119,8 @@ par(opar) # Reset par
 
 #Q25 Ranking challenges
 datrank <- ANAMSdata[43:51]
+      datrank <- onlyaiannum[43:51] # For evaluating only ai/an data
+      datrank <- aiancombonum[43:51] # For evaluating only AI/AN in combo with another race
 View(datrank)
 #Set up matrices for my data, one question at a time
 q1 <- as.numeric(datrank$Q14_0_1_RANK)
@@ -1005,9 +1309,8 @@ rank2 = c(q1rank2, q2rank2, q3rank2, q4rank2, q5rank2, q6rank2, q7rank2, q8rank2
 rank3 = c(q1rank3, q2rank3, q3rank3, q4rank3, q5rank3, q6rank3, q7rank3, q8rank3, q9rank3)
 #Bind them together
 challengerankmatrix <- rbind(rank1, rank2, rank3)
-View(challengerankmatrix)
 #Labels for graph
-challengetitle <- c("Ranked challenges")
+challengetitle <- c("What challenges have you overcome\n to get to where you are today?")
 challengeoptions <- c("Financial", 
              "Family related issues", 
              "Distance from family",
@@ -1025,32 +1328,50 @@ challengerankmatrix <- rbind(rank1, rank2, rank3) / denominator * 100
 View(challengerankmatrix)
 
 #Change order so descending by ranked first
-  challengedescending <- order(challengerankmatrix[1, ], decreasing = FALSE)
+  challengedescending <- order(challengerankmatrix[1, ], decreasing = FALSE) # Decrease = FALSE because the barplot function will flip it later
   challengedescending
   challengeplot <- challengerankmatrix[,challengedescending[1:9]]
   challengeplot
-  challengeoptions <- challengeoptions[challengedescending[1:9]]
+  descendingchallengeoptions <- challengeoptions[challengedescending[1:9]]
+  descendingchallengeoptions
+  
+#Use only top 3 choices to merge with alleviating factors matrix later
+  testa <- challengeplot[1:3,7:9] # Take the top 3 options, all 3 rows
+  testa
+  testplotchallengeoptions <- descendingchallengeoptions[7:9]
+  testplotchallengeoptions
+    
 x11()
-opar = par(oma = c(0,5,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
-barplot(challengeplot, 
+par(opar) # Reset par
+opar = par(oma = c(0,10,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
+plota <- 
+  barplot(
+        #challengeplot, #Use when making graph of all 9 options for challenges
+        testa, #USe when making graph with top 3 challenges and helpers in one
         beside = F, 
         main = challengetitle, 
-        xlim = c(0,60),
+        xlim = c(0,100),
         xlab = "Percent of respondants %",
         legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
         args.legend = list(x = 'bottomright', bty = 'n'),
-        names.arg = challengeoptions,
+        names.arg = testplotchallengeoptions, # Use for combined graph
+        #names.arg = descendingchallengeoptions, # Use for graph of 9 challenges
         cex.main = 1.5,
         cex.names = 0.7,  #Decrease font size of x axis options
         cex.lab = 1.5,
         horiz = TRUE,
         las = 1,   #Makes all text vertical
         space = 0.66
-)
+  )
+par(opar) # Reset par
+opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
+par(opar) # Reset par
 
 
 #Q26 Alleviating factors ranking
 helpingfactors <- ANAMSdata[,53:61]
+  helpingfactors <- onlyaiannum[,53:61] # For analysis of only AI/AN individuals
+  helpingfactors <- aiancombonum[,53:61] # For analysis of only AI/AN incombo w/ another race
 View(helpingfactors)
 class(helpingfactors$Q15_0_1_RANK)
 
@@ -1250,9 +1571,11 @@ rank2 = c(q1rank2, q2rank2, q3rank2, q4rank2, q5rank2, q6rank2, q7rank2, q8rank2
 rank3 = c(q1rank3, q2rank3, q3rank3, q4rank3, q5rank3, q6rank3, q7rank3, q8rank3, q9rank3)
 #Bind them together
 helprankmatrix <- rbind(rank1, rank2, rank3)
-View(helprankmatrix)
+  #Change data from n to a percentage
+  denominator <- length(na.omit(ANAMSdata[3:nrow(ANAMSdata), 52]))
+helprankmatrix <- rbind(rank1, rank2, rank3) / denominator * 100
 #Labels for graph
-helpingtitle <- c("Rank the following factors that have helped you")
+helpingtitle <- c("What factors have helped you get\n to where you are today?")
 alleviatingfactorsoptions <- c("Outreach programs through\nmedical schools",
                                "Outreach programs through\nundergraduate schools",
                                "AAIP\n(Association of American Indian Physicians)",
@@ -1263,9 +1586,7 @@ alleviatingfactorsoptions <- c("Outreach programs through\nmedical schools",
                                "A sense of community\nin my undergraduate school"
                                 )
 
-#Change data from n to a percentage
-denominator <- length(na.omit(ANAMSdata[3:nrow(ANAMSdata), 52]))
-helprankmatrix <- rbind(rank1, rank2, rank3) / denominator * 100
+
 
 #Change the order
 helpingdescending <- order(helprankmatrix[1, ], decreasing = FALSE)
@@ -1275,16 +1596,27 @@ helpplot
 alleviatingfactorsoptions <- alleviatingfactorsoptions[helpingdescending[1:9]]
 alleviatingfactorsoptions
 
+  #Use only top 3 choices to merge with alleviating factors matrix later
+    testb <- helpplot[1:3,7:9] # Take the top 3 options, all 3 rows
+    testb
+    testplothelpoptions <- alleviatingfactorsoptions[7:9]
+    testplothelpoptions
+
+#Only use if plotting 9 options from alleviating factors alone
 x11()
+par(opar) # Reset par
 opar = par(oma = c(0,10,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
-barplot(helpplot, 
+plotb <- barplot(
+        #helpplot, # USe for plot of 9
+        testb, # Use for combined graph
         beside = F, 
         main = helpingtitle, 
-        xlim = c(0,75),
+        xlim = c(0,100),
         xlab = "Percent of respondants %",
         legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
         args.legend = list(x = 'bottomright', bty = 'n'),
-        names.arg = alleviatingfactorsoptions, 
+        names.arg = testplothelpoptions, # use for combined plot
+        #names.arg = alleviatingfactorsoptions, Use for plot of 9
         cex.main = 1.5,
         cex.lab = 1.5,
         cex.names = 0.7,  #Decrease font size of x axis options
@@ -1292,6 +1624,49 @@ barplot(helpplot,
         las = 1,   #Makes all text vertical
         space = 0.4
         )
+par(opar) # Reset par
+opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
+par(opar) # Reset par
+
+#Now combine questions 25 and 26 into a single graph
+x11()
+par(mfrow = c(2,1))
+opar = par(oma = c(0,5,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
+    plota <- 
+      barplot(testa, 
+              beside = F, 
+              main = challengetitle, 
+              xlim = c(0,100),
+              xlab = "Percent of respondants %",
+              legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
+              args.legend = list(x = 'bottomright', bty = 'n'),
+              names.arg = testplotchallengeoptions,
+              cex.main = 1.5,
+              cex.names = 0.7,  #Decrease font size of x axis options
+              cex.lab = 1.2,
+              horiz = TRUE,
+              las = 1,   #Makes all text vertical
+              space = 0.66
+                    )
+
+    plotb <- 
+      barplot(testb, 
+                     beside = F, 
+                     main = helpingtitle, 
+                     xlim = c(0,100),
+                     xlab = "Percent of respondants %",
+                     legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
+                     args.legend = list(x = 'bottomright', bty = 'n'),
+                     names.arg = testplothelpoptions, 
+                     cex.main = 1.5,
+                     cex.lab = 1.2,
+                     cex.names = 0.7,  #Decrease font size of x axis options
+                     horiz = TRUE,
+                     las = 1,   #Makes all text vertical
+                     space = 0.4
+                  )
+opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
+par(mfrow = c(1,1))
 
 #Q27 - Qualitative question
 table(stringdata[c(3:46),c(62)])
@@ -1299,26 +1674,54 @@ table(stringdata[c(3:46),c(62)])
 #Q28 - field of medicine
 table(stringdata[,c(63)])
 freq(stringdata[,c(63)])
+freq(onlyaian[,c(63)])
+freq(aiancombo[,c(63)])
 
 piestring <- sort(table(stringdata[,c(63)]), decreasing = TRUE)
-#Group Urology, ENT, and Other Surgical Subspecialties together as "Surgical subspecialty"
-surg.subspecialty <- piestring[8] + piestring[10] + piestring[11]
+  piestring <- sort(table(onlyaian[,c(63)]), decreasing = TRUE) # Use for only AI/AN
+  piestring <- sort(table(aiancombo[,c(63)]), decreasing = TRUE) # Use for only AI/AN in combo
 piestring
 
+surg.subspecialty <- piestring[8] + piestring[10] + piestring[11] #Group Urology, ENT, and Other Surgical Subspecialties together as "Surgical subspecialty"
+surg.subspecialty #Note - header is named as urology as that is piestring[8], will force graph labels at the end
+lowresponsegroup <- piestring[6] + piestring[7] + piestring[9] # Group derm, psych, EM into one for visual aesthetic
+lowresponsegroup #Note - header is named as derm as that is piestring[6], will force graph labels at the end
+
 #Changing the order to be more aesthetically pleasing, subjectively group
-neworder <- c(piestring[1], piestring[2], piestring[4], piestring[9], piestring[7], piestring[3], piestring[6], piestring[5], surg.subspecialty)
+neworder <- c(piestring[1], piestring[2], piestring[4], #Fammed, IM, peds
+              piestring[3], piestring[5], surg.subspecialty, #ob/gyn, gensurg, surg subspecialty
+              lowresponsegroup)
+              
   neworder
 total <- sum(neworder)
   total  
 #Setting graph parameters
 colors <- colorspace::sequential_hcl(11, palette = "Lajolla")
-futureplans <- c("Family Medicine", "IM", "Peds", "EM", "Psychiatry",
-  "Ob/Gyn", "Derm", "General Surgery", "Surgical sub-specialty")
-
+futureplans <- c("Family Medicine", "IM", "Peds", "Ob/Gyn",
+                 "General Surgery", "Surgical sub-specialty",
+                 "Other"
+                 )
+    futureplans <- c("Family Medicine", # For only AIAN
+                     "Ob/Gyn", "IM", 
+                     "General Surgery", 
+                     "Dermatology", 
+                     "EM", "ENT", "Peds",
+                     "Surgical sub-specialty", "Urology")
+    
+    futureplans <- c("Family Medicine", # For only AIAN in combo
+                      "IM", "Ob/Gyn",
+                     "Peds", "Psychiatry",
+                     "Dermatology", 
+                     "General Surgery", 
+                     "Urology")
+    
+    
 x11()
-pie(neworder,
+pie(piestring,
+  #neworder,
   main = "Future career plans:",
-  labels = paste0(futureplans, " ", round(100 * neworder / sum(neworder),0), "%"),
+  #labels = paste0(futureplans, " ", round(100 * neworder / sum(neworder),0), "%"),
+  labels = paste0(futureplans, " ", round(100 * piestring / sum(piestring),0), "%"),
   edges = 200,
   radius = 0.85, 
   init.angle =  90, 
@@ -1332,6 +1735,8 @@ pie(neworder,
   #border = colors
     )
 
+pie(piestring)
+
 #Q29 and Q30 - Future work plans - Bar plot chart of future career choices. 2 in one. Better than pie chart?
   #Q29 - IHS
     table(stringdata[c(3:46),c(64)])
@@ -1341,7 +1746,50 @@ pie(neworder,
     table(stringdata[c(3:46),c(65)])
     pie(table(stringdata[c(3:46),c(65)]),main = stringdata[c(1),c(65)])
     freq(stringdata[c(3:46),c(65)])
-
+    
+  #Remove those who selected full time for both questions 29 and 30
+    fpcorrected <- stringdata[,64:65]
+    fpcorrected <- subset(x = fpcorrected, subset = !(fpcorrected[,1] == "Yes - full time" & fpcorrected[,2] == "Yes - full time"))
+    fpcorrected
+    freq(fpcorrected[,1])
+    freq(fpcorrected[,2])
+    
+    # Analysis of AI/AN alone and AI/AN in combination w/ corrected numbers from above ^
+      
+      # Only AI/AN
+        aianfpcorrected <- onlyaian[,64:65]
+        aianfpcorrected <- subset(x = aianfpcorrected, subset = !(aianfpcorrected[,1] == "Yes - full time" & aianfpcorrected[,2] == "Yes - full time"))
+        aianfpcorrected
+          freq(aianfpcorrected[,1])
+          freq(aianfpcorrected[,2])
+    
+      # AI/AN in combination
+        cfpcorrected <- aiancombo[,64:65]
+        cfpcorrected <- subset(x = cfpcorrected, subset = !(cfpcorrected[,1] == "Yes - full time" & cfpcorrected[,2] == "Yes - full time"))
+        cfpcorrected
+          freq(cfpcorrected[,1])
+          freq(cfpcorrected[,2])
+        
+      #Chi Squared Testing - question 64 - IHS
+        a <- table(aianfpcorrected[,1])
+        b <- table(cfpcorrected[,1])
+        fpihs <- rbind(a,b)
+        rownames(fpihs) <- c("AI/AN alone", "AI/AN in combination")
+        fpihs
+        chisq.test(fpihs,simulate.p.value = TRUE)
+        fisher.test(fpihs)
+      
+      #Chi Squared Testing - question 65 - non-IHS
+        a <- table(aianfpcorrected[,2])
+        b <- table(cfpcorrected[,2])
+        fpnihs <- rbind(a,b)
+        rownames(fpnihs) <- c("AI/AN alone", "AI/AN in combination")
+        fpnihs[2,2] <- 0 # Manually set number of AI/AN in combo who answered "No" to zero in agreement w/ survey results
+        fpnihs [2,4] <- 0 # Manually set number of AI/AN in combo who answered "Yes - full time" to zero in agreement w/ survey results
+        fpnihs
+        chisq.test(fpnihs, simulate.p.value = TRUE) 
+        fisher.test(fpnihs)
+        
   #A graph not used in paper
     q29 <- freq(stringdata[c(3:46),c(64)])
     q30 <- freq(stringdata[c(3:46),c(65)])
@@ -1353,5 +1801,10 @@ pie(neworder,
         args.legend = list(x = 'topright', bty = 'n'),
         ylab = "Percent %"
             )
-            
-            
+    freq(onlyaian[,c(64)]) # For only AI/AN
+    freq(onlyaian[,c(65)]) # For only AI/AN
+    
+    freq(aiancombo[,c(64)]) # For only AI/AN in combination
+    freq(aiancombo[,c(65)]) # For only AI/AN in combination   
+
+    
