@@ -13,6 +13,7 @@ library(car)
 library(RColorBrewer)
 library(likert)
 library(colorspace)
+library(DescTools)
 #####
 #AAMC Data - was unable to download files as CSV. Will manually put dat in here
 #AAMC 2021-2022 Matriculant data
@@ -208,6 +209,9 @@ ANAMSdata <- ANAMSdata[3:nrow(ANAMSdata),] # Remove first two rows of data from 
   ANAMSdata <- subset(x = ANAMSdata, subset = as.numeric(ANAMSdata[,18]) == 1) # Remove those who did not consent
   ANAMSdata <- subset(x = ANAMSdata, subset = as.numeric(ANAMSdata[,19]) == 1) # Remove those who are not ANAMS members
   View(ANAMSdata)
+  
+  
+dim(ANAMSdata)
 
 stringdata <- stringdata[3:nrow(stringdata),] # Remove first two rows of data from qualtrics
   stringdata <- subset(x = stringdata, subset = as.numeric(stringdata[,5]) == 100) # Remove incomplete responses
@@ -230,12 +234,43 @@ numresponses
     View(aiancombo)
     aiancombonum <- subset(x = ANAMSdata, subset = ANAMSdata[,20] != 1)
     View(aiancombonum)
-  
+    
+  # For subgroup of those who received IHS healthcare - READY TO GO
+    onlynativehc <- subset(x = stringdata, subset = stringdata[,24] != "No")
+    View(onlynativehc)  
+    
+  # For subgroup of those who grew up in a native community - READY TO GO
+    nativecommunity <- subset(x = stringdata, subset = stringdata[,23] != "I am affiliated with a tribe (descendant of)")
+    nativecommunity <- subset(x = nativecommunity, subset = nativecommunity[,23] != "I am an enrolled member of a Native tribe")
+    nativecommunity <- subset(x = nativecommunity, subset = nativecommunity[,23] != "I am an enrolled member of a Native tribe,I am affiliated with a tribe (descendant of)")
+    View(nativecommunity)    
   
 #Q3 - Ethnicity
 table(stringdata[,c(20)])
 pie(table(stringdata[,c(20)]),main = stringdata[c(1),c(20)])
 freq(stringdata[,c(20)])
+freq
+freq(onlynativehc[,c(20)])
+freq(nativecommunity[,c(20)])
+
+# CI for ANAMS population - AI/AN alone
+n <- 39
+p <- 21/39
+margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+lowerinterval <- p - margin
+upperinterval <- p + margin
+lowerinterval
+upperinterval
+
+# CI for ANAMS population - AN/AN in combination
+n <- 39
+p <- 18/39
+margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+lowerinterval <- p - margin
+upperinterval <- p + margin
+lowerinterval
+upperinterval
+
 
 #Q4 Gender Identity 
 table(stringdata[,c(21)])
@@ -245,6 +280,9 @@ freq(stringdata[,c(21)])
 freq(onlyaian[,c(21)])
 freq(aiancombo[,c(21)])
 
+freq(onlynativehc[,c(21)])
+freq(nativecommunity[,c(21)])
+
   #Categorical stats Testing
   a <- table(onlyaian[,c(21)])
   b <- table(aiancombo[,c(21)])
@@ -253,6 +291,24 @@ freq(aiancombo[,c(21)])
   gender
   #chisq.test(gender)
   fisher.test(gender)
+
+  # CI for ANAMS population - male
+  n <- 39
+  p <- 12/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - female
+  n <- 39
+  p <- 27/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
   
 #Geographic Data - Not used in paper
 #Q5, Q8, Q10
@@ -283,9 +339,19 @@ View(q8)
 q10 <- stringdata[,c(27)] # School in IHS
 View(q10)
 
+samestate <- q5 == q8
+samestate
+
+length(subset(samestate,x = TRUE))
+
+movedoutofstate <- subset(samestate, x = FALSE)
+movedoutofstate
+
+
+
 ###This part is not automated. You will have to change the row numbers if people from more states answer
 #Alaska - Alaska
-  #No respondants from Alaska
+  #No respondents from Alaska
 q5alaska <- 0
 q8alaska <- 0
 
@@ -413,7 +479,7 @@ percent.grewup.native <- freq(stringdata[,c(23)])
 percent.grewup.native
 pct.rez <- sum(percent.grewup.native[8:10,2]) # Gives total percentage who grew up on a reservation
 pct.rez
-pct.another.native.community <- sum(percent.grewup.native[c(3:6, 10),2]) # Gives total number of respondants who grew up in a primarily native community
+pct.another.native.community <- sum(percent.grewup.native[c(3:6, 10),2]) # Gives total number of respondents who grew up in a primarily native community
 pct.another.native.community
 pct.enrolled.tribal.members <- sum(percent.grewup.native[c(2, 3, 6, 7, 9, 10),2])
 pct.enrolled.tribal.members
@@ -453,14 +519,20 @@ pct.enrolled.tribal.members
                   )
     library(RColorBrewer)
     x11()
-    barplot(pct.ans.q6, main = "Percent of respondants who:", 
+    barplot(pct.ans.q6, main = "Percent of respondents who:", 
         legend.text = bar.names.q6, 
         col = c("#CA0020", "#F4A582", "#92C5DE", "#0571B0"), 
         args.legend = list(x = 'topleft', bty = 'n')
             )
     
     freq(onlyaian[,c(23)])
+    table(onlyaian[,c(23)])
     freq(aiancombo[,c(23)])
+    table(aiancombo[,c(23)])
+    
+    freq(onlynativehc[,c(23)])
+    freq(nativecommunity[,c(23)])
+    
 
     #Statistics Testing
     a <- table(onlyaian[,c(23)])
@@ -497,6 +569,33 @@ pct.enrolled.tribal.members
     demographic
     chisq.test(demographic)
     fisher.test(demographic)
+    
+    # CI for ANAMS population - Lived on a rez
+    n <- 39
+    p <- 5/39
+    margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+    lowerinterval <- p - margin
+    upperinterval <- p + margin
+    lowerinterval
+    upperinterval
+    
+    # CI for ANAMS population - lived on a non-rez native community
+    n <- 39
+    p <- 9/39
+    margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+    lowerinterval <- p - margin
+    upperinterval <- p + margin
+    lowerinterval
+    upperinterval
+    
+    # CI for ANAMS population - Tribal membership
+    n <- 39
+    p <- 27/39
+    margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+    lowerinterval <- p - margin
+    upperinterval <- p + margin
+    lowerinterval
+    upperinterval
         
 #Q7 - Select all that apply - where did you get healthcare growing up - Q4 in R
 table(stringdata[c(3:46),c(24)])
@@ -509,6 +608,9 @@ freq(stringdata[c(3:46),c(24)])
 freq(onlyaian[,c(24)])
 freq(aiancombo[,c(24)])
 
+freq(onlynativehc[,c(24)])
+freq(nativecommunity[,c(24)])
+
   #Statistics Testing
   a <- table(onlyaian[,c(24)])
   b <- table(aiancombo[,c(24)])
@@ -518,6 +620,33 @@ freq(aiancombo[,c(24)])
   chisq.test(healthcare)
   fisher.test(healthcare)
 
+  # CI for ANAMS population - IHS
+  n <- 39
+  p <- 10/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - non-IHS tribal healthcare
+  n <- 39
+  p <- 3/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - other access
+  n <- 39
+  p <- 26/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
 #Q9 Degrees to be obtained
 table(stringdata[c(3:46),c(26)])
 pie(table(stringdata[c(3:46),c(26)]),main = stringdata[c(1),c(26)])
@@ -525,6 +654,9 @@ freq(stringdata[,c(26)])
 
 freq(onlyaian[,c(26)])
 freq(aiancombo[,c(26)])
+freq(onlynativehc[,c(26)])
+freq(nativecommunity[,c(26)])
+
 
   #Statistics Testing
   a <- table(onlyaian[,c(26)])
@@ -534,7 +666,44 @@ freq(aiancombo[,c(26)])
   rownames(degree) <- c("AI/AN alone", "AI/AN in combination")
   degree
   #chisq.test(degree)
-  fisher.test(degree) 
+  fisher.test(degree)
+  
+  # CI for ANAMS population - MD
+  n <- 39
+  p <- 25/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - DO
+  n <- 39
+  p <- 3/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - MD + Masters
+  n <- 39
+  p <- 6/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
+  # CI for ANAMS population - MD + PhD
+  n <- 39
+  p <- 5/39
+  margin <- qnorm(0.975)*sqrt(p*(1-p)/n)
+  lowerinterval <- p - margin
+  upperinterval <- p + margin
+  lowerinterval
+  upperinterval
+  
    
 #Q11 - Med school tribal rotations available... multiple responses allowed - Q8 on qualtrics
 table(stringdata[,c(28)])
@@ -582,6 +751,9 @@ freq(stringdata[,c(28)])
   
   freq(onlyaian[,c(28)])
   freq(aiancombo[,c(28)])
+  freq(onlynativehc[,c(28)])
+  freq(nativecommunity[,c(28)])
+  
   
   #Statistics Testing
   a <- table(onlyaian[,c(28)])
@@ -617,6 +789,9 @@ freq(stringdata[,c(29)])
   )
   freq(onlyaian[,c(29)])
   freq(aiancombo[,c(29)])
+  freq(onlynativehc[,c(29)])
+  freq(nativecommunity[,c(29)])
+  
   
   #Chi Squared Testing
   a <- table(onlyaian[,c(29)])
@@ -641,6 +816,9 @@ freq(stringdata[,c(30)])
   )
   freq(onlyaian[,c(30)])
   freq(aiancombo[,c(30)])
+  freq(onlynativehc[,c(30)])
+  freq(nativecommunity[,c(30)])
+  
   
   #Chi Squared Testing
   a <- table(onlyaian[,c(30)])
@@ -657,6 +835,7 @@ matrixorderdat <- ANAMSdata[,31:41]
     matrixorderdat <- onlyaiannum[,31:41] # For analysis of only AI/AN alone, use this
     matrixorderdat <- aiancombonum[,31:41] # For analysis of only AI/AN alone, use this
 View(matrixorderdat)
+
   #Note - 1 = strongly agree, 2 = somewhat agree, 3 = somewhat disagree, 4 = strongly disagree, 5 = I don't know
 q14 <- as.numeric(matrixorderdat$Q12_1)
   q14 <- subset(q14, !is.na(q14))
@@ -692,7 +871,6 @@ q14idk <- gsub("1", "", q14)
   q14idk <- gsub("4", "", q14idk)
   q14idk <-sum(as.numeric(subset(q14idk, !is.na(as.numeric(q14idk)))))/5
   q14idk
-  
 q15 <- as.numeric(matrixorderdat$Q12_2)
   q15 <- subset(q15, !is.na(q15))
   q15
@@ -727,7 +905,6 @@ q15idk <- gsub("1", "", q15)
   q15idk <- gsub("4", "", q15idk)
   q15idk <-sum(as.numeric(subset(q15idk, !is.na(as.numeric(q15idk)))))/5
   q15idk  
-  
 q16 <- as.numeric(matrixorderdat$Q12_3)
   q16 <- subset(q16, !is.na(q16))
   q16
@@ -762,7 +939,6 @@ q16idk <- gsub("1", "", q16)
   q16idk <- gsub("4", "", q16idk)
   q16idk <-sum(as.numeric(subset(q16idk, !is.na(as.numeric(q16idk)))))/5
   q16idk    
-  
 q17 <- as.numeric(matrixorderdat$Q12_4)
   q17 <- subset(q17, !is.na(q17))
   q17
@@ -797,7 +973,6 @@ q17idk <- gsub("1", "", q17)
   q17idk <- gsub("4", "", q17idk)
   q17idk <-sum(as.numeric(subset(q17idk, !is.na(as.numeric(q17idk)))))/5
   q17idk   
-  
 q18 <- as.numeric(matrixorderdat$Q12_5)
   q18 <- subset(q18, !is.na(q18))
   q18
@@ -832,7 +1007,6 @@ q18idk <- gsub("1", "", q18)
   q18idk <- gsub("4", "", q18idk)
   q18idk <-sum(as.numeric(subset(q18idk, !is.na(as.numeric(q18idk)))))/5
   q18idk    
-  
 q19 <- as.numeric(matrixorderdat$Q12_6)
   q19 <- subset(q19, !is.na(q19))
   q19
@@ -867,7 +1041,6 @@ q19idk <- gsub("1", "", q19)
   q19idk <- gsub("4", "", q19idk)
   q19idk <-sum(as.numeric(subset(q19idk, !is.na(as.numeric(q19idk)))))/5
   q19idk  
-  
 q20 <- as.numeric(matrixorderdat$Q12_7)
   q20 <- subset(q20, !is.na(q20))
   q20
@@ -902,7 +1075,6 @@ q20idk <- gsub("1", "", q20)
   q20idk <- gsub("4", "", q20idk)
   q20idk <-sum(as.numeric(subset(q20idk, !is.na(as.numeric(q20idk)))))/5
   q20idk
-  
 q21 <- as.numeric(matrixorderdat$Q12_8)
   q21 <- subset(q21, !is.na(q21))
   q21
@@ -937,7 +1109,6 @@ q21idk <- gsub("1", "", q21)
   q21idk <- gsub("4", "", q21idk)
   q21idk <-sum(as.numeric(subset(q21idk, !is.na(as.numeric(q21idk)))))/5
   q21idk
-  
 q22 <- as.numeric(matrixorderdat$Q12_9)
   q22 <- subset(q22, !is.na(q22))
   q22
@@ -972,7 +1143,6 @@ q22idk <- gsub("1", "", q22)
   q22idk <- gsub("4", "", q22idk)
   q22idk <-sum(as.numeric(subset(q22idk, !is.na(as.numeric(q22idk)))))/5
   q22idk  
-  
 q23 <- as.numeric(matrixorderdat$Q12_10)
   q23 <- subset(q23, !is.na(q23))
   q23
@@ -1007,7 +1177,6 @@ q23idk <- gsub("1", "", q23)
   q23idk <- gsub("4", "", q23idk)
   q23idk <-sum(as.numeric(subset(q23idk, !is.na(as.numeric(q23idk)))))/5
   q23idk
-  
 q24 <- as.numeric(matrixorderdat$Q12_11)
   q24 <- subset(q24, !is.na(q24))
   q24
@@ -1065,9 +1234,12 @@ graphorderdat <- rbind(strongagree, somewhatagree, idk,somewhatdisagree, strongd
 barplot(graphorderdat)
 View(graphorderdat)
 
-#Change order so strongly agree is largest
-descendingorder <- order(graphorderdat[1, ], decreasing = FALSE) # Change the order of answers by decreasing responses to strongly agree
+#Change order so Strongly Agree + Somewhat Agree is largest
+descendingorder <- order(graphorderdat[1,] + graphorderdat[2,], decreasing = FALSE)
 descendingorder
+  # IF you change order only to strongly agree
+    #descendingorder <- order(graphorderdat[1, ], decreasing = FALSE) 
+    #descendingorder
 matrixplot <- graphorderdat[,descendingorder[1:11]] # New matrix of data based on decreasing order of question 1
 matrixplot
 
@@ -1075,47 +1247,163 @@ matrixplot
 denominator <- length(matrixorderdat[, 1])
 denominator
 matrixplot <- matrixplot / denominator * 100 # Change from n to percent
+matrixplot
 
 #Parameters for graph
-legend.text = c("Strongly agree", "somewhat agree", "I don't know", "somewhat disagree", "Strongly disagree")
+legend.text = c("Strongly Agree",
+                "Somewhat Agree",
+                "I Don't Know", 
+                "Somewhat Disagree",
+                "Strongly Disagree"
+                )
+                
+
+
+#Computer generated graph from R - \n
 qnames <- c(
-  "I feel a sense of community with\n Native peers at my institution",
-  "I am satisfied with my school's effort\n to recruit Native students",
-  "There is adequate scholarship funding\n at my school for Native students",
-  "I am satisfied with Native faculty \n representation and mentorship at my school",
-  "I am sastified with my school's engagement with Native faculty \n and experts to contribute to lectures and learning opportunities",
-  "I am satisfied with the amount of cultural competancy training \n as it relates to AI-AN health care delivery at my institution",
-  "I am satisfied with my school's education and training \n that exposes students to Native communities and health",
-  "I am satisfied with the amount of education\n of AI-AN health disparities at my institution",
-  "I am satisfied with the opportunities provided by my\n institution to do clinical electives in tribal communities",
-  "I am satisfied with my school's\n outreach to Native organizations",
-  "I am satisfied with my school's\n outreach to Native communities"
-            )
+  "I feel a sense of community with Native peers at my institution", #OK
+  "I am satisfied with my school's effort to recruit Native students", #OK
+  "There is adequate scholarship funding at my school for Native students", #OK
+  "I am satisfied with Native faculty representation\n and mentorship at my school",
+  "I am satisfied with my school's engagement with Native faculty and\nexperts to contribute to lectures and learning opportunities",
+  "I am satisfied with the amount of cultural competency training\nas it relates to AI-AN health care delivery at my institution",
+  "I am satisfied with my school's education and training\n that exposes students to Native communities and health",
+  "I am satisfied with the amount of education of\n AI-AN health disparities at my institution",
+  "I am satisfied with the opportunities provided by my\ninstitution to do clinical electives in tribal communities",
+  "I am satisfied with my school's outreach to Native organizations",
+  "I am satisfied with my school's outreach to Native communities"
+)
+
+
+  
+  
 qnames <- qnames[descendingorder[1:11]]
+colnames(matrixplot) <- qnames
+View(matrixplot)
+
+##### Playing around with stuff
+  matrixplot <- matrixplot * denominator / 100
+  View(matrixplot)
+  justify(qnames)
+
+      # Bigger sized graph \n
+      qnames <- c(
+        "I feel a sense of community with\n Native peers at my institution",
+        "I am satisfied with my school's effort\n to recruit Native students",
+        "There is adequate scholarship funding\n at my school for Native students",
+        "I am satisfied with Native faculty \n representation and mentorship at my school",
+        "I am satisfied with my school's engagement with Native faculty\and experts to contribute to lectures and learning opportunities",
+        "I am satisfied with the amount of cultural competency training \n as it relates to AI-AN health care\n delivery at my institution",
+        "I am satisfied with my school's education and training \n that exposes students to Native communities and health",
+        "I am satisfied with the amount of education\n of AI-AN health disparities at my institution",
+        "I am satisfied with the opportunities provided by my\n institution to do clinical electives in tribal communities",
+        "I am satisfied with my school's\n outreach to Native organizations",
+        "I am satisfied with my school's\n outreach to Native communities"
+                  )
+      
+      # No spacing built in
+      qnames <- c(
+        "I feel a sense of community with Native peers at my institution",
+        "I am satisfied with my school's effort to recruit Native students",
+        "There is adequate scholarship funding at my school for Native students",
+        "I am satisfied with Native faculty representation and mentorship at my school",
+        "I am satisfied with my school's engagement with Native faculty and experts to contribute to lectures and learning opportunities",
+        "I am satisfied with the amount of cultural competency training as it relates to AI-AN health care delivery at my institution",
+        "I am satisfied with my school's education and training that exposes students to Native communities and health",
+        "I am satisfied with the amount of education of AI-AN health disparities at my institution",
+        "I am satisfied with the opportunities provided by my institution to do clinical electives in tribal communities",
+        "I am satisfied with my school's outreach to Native organizations",
+        "I am satisfied with my school's outreach to Native communities"
+      )
+      
+      
+      
+      
+      #Testing stuff
+      qnames <- c(
+        "I feel a sense of community with Native peers at my institution", #OK
+        "I am satisfied with my school's effort to recruit Native students", #OK
+        "There is adequate scholarship funding at my school for Native students", #OK
+        "I am satisfied with Native faculty representation\r\nand mentorship at my school",
+        "I am satisfied with my school's engagement with Native faculty and\rexperts to contribute to lectures and learning opportunities",
+        "I am satisfied with the amount of cultural competency training\ras it relates to AI-AN health care delivery at my institution",
+        "I am satisfied with my school's education and training\r that exposes students to Native communities and health",
+        "I am satisfied with the amount of education of AI-AN health\rdisparities at my institution",
+        "I am satisfied with the opportunities provided by my\rinstitution to do clinical electives in tribal communities",
+        "I am satisfied with my school's outreach to Native organizations",
+        "I am satisfied with my school's outreach to Native communities"
+      )
+
+##### stuff that I am working on to justify margins
+    a <- ("I am satisfied with the opportunities provided by my\n institution to do clinical electives in tribal communities")
+    a
+    a <- c("I am satisfied with the opportunities provided by my", "institution to do clinical electives in tribal communities")
+    print(a)
+    cat(a)
+
+    dim(qnames)
+    str(qnames)
+    library(stringi)
+    a <- stri_pad_left(qnames)
+    b <- stri_pad_right(qnames)
+    c <- stri_pad_both(qnames)
+    d <- stri_wrap(str = qnames,cost_exponent = 2  )
+    d
+    
+    justify(qnames,)
+    
+qnames <- text(qnames, pos = 2)
+
+testnames <- text(x = -6,
+                  adj = c(0,0),
+                  labels = qnames,
+                  pos = 4
+                  )
+
+testnames
+View(testnames)
+
+
+#### End playing, run below code
+
+setEPS()
+postscript("Figure 1.eps")
+
 colorscale <- colorspace::diverge_hcl(5, palette = "Blue-Red")
+colorscale <- colorspace::sequential_hcl(5, palette = "Grays")
 x11()
 par(opar) # Reset par
-opar = par(oma = c(4,16,2,2)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
+opar = par(oma = c(4,16,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
 barplot(matrixplot, 
         horiz = TRUE,
         beside = F, 
-        main = c("Answer the following questions about your medical school:"), 
+        #main = c("Answer the following questions about your medical school:"), 
         xlim = c(0,100),
-        xlab = "Percent of respondants %",
-        names.arg = qnames,
-        cex.names = 0.75,  #Decrease font size of question labels
-        cex.axis = 1.2,
-        cex.main = 2,
-        cex.lab = 1.5,
+        xlab = "Percent of respondents %",
+        #names.arg = justify(qnames, type = "left"),
+        #names.arg = strwrap(qnames,width = 30),
+        #names.arg = testnames,
+        #names.arg = qnames,
+        names.arg = StrAlign(qnames, sep = "\\r"),
+        #names.arg = text(qnames, adj = c(0,0)),
+        cex.names = 0.7,  #Decrease font size of question labels
+        cex.axis = 1,
+        #cex.main = 2,
+        cex.lab = 1,
         las = 1,   #Makes all text vertical
         col = colorscale,
         space = 0.66
-          
 )
+
+
+
 par(opar) # Reset par
 opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
-legend(x ="bottomleft", legend = legend.text, fill = colorscale, bty = 'n', ncol = 1, xjust = 1, yjust = 1.5, inset = -0.05)
+legend(x ="bottomleft", legend = legend.text, 
+       fill = colorscale, 
+       bty = 'n', ncol = 1, xjust = 1, yjust = 1.5, inset = -0.05, cex = 1.)
 par(opar) # Reset par
+dev.off()
 
 #Q25 Ranking challenges
 datrank <- ANAMSdata[43:51]
@@ -1309,6 +1597,7 @@ rank2 = c(q1rank2, q2rank2, q3rank2, q4rank2, q5rank2, q6rank2, q7rank2, q8rank2
 rank3 = c(q1rank3, q2rank3, q3rank3, q4rank3, q5rank3, q6rank3, q7rank3, q8rank3, q9rank3)
 #Bind them together
 challengerankmatrix <- rbind(rank1, rank2, rank3)
+challengerankmatrix
 #Labels for graph
 challengetitle <- c("What challenges have you overcome\n to get to where you are today?")
 challengeoptions <- c("Financial", 
@@ -1319,13 +1608,51 @@ challengeoptions <- c("Financial",
              "Lack of role models",
              "Unfamiliarity with applications",
              "First generation college student",
-             "First generation medical student"
-              )
+             "First generation\nmedical student"
+              ) # In order of presentation in survey
 
 #Change data from n to a percentage
 denominator <- length(na.omit(ANAMSdata[3:nrow(ANAMSdata), 42]))
 challengerankmatrix <- rbind(rank1, rank2, rank3) / denominator * 100
+#colnames(challengerankmatrix) <- challengeoptions
+#View(challengerankmatrix)
+
+#challengerankmatrix <- challengerankmatrix * denominator / 100
+#View(challengerankmatrix)
+
+challengerankmatrix
+
+colnames(challengerankmatrix) <- challengeoptions
+challengerankmatrix
 View(challengerankmatrix)
+
+rank1list <- order(challengerankmatrix[1,], decreasing = TRUE)
+rank1list
+rank2list <- order(challengerankmatrix[2,], decreasing = TRUE)
+rank2list
+rank3list <- order(challengerankmatrix[3,], decreasing = TRUE)
+rank3list
+
+newvector1 <- challengerankmatrix[1,rank1list[1:3]]
+newvector1
+newvector2 <- challengerankmatrix[2,rank2list[1:3]]
+newvector2
+newvector3 <- challengerankmatrix[3,rank3list[1:3]]
+newvector3
+
+newtable <- cbind(newvector1, newvector2, newvector3)
+newtable
+colnames(newtable) <- c("Ranked 1st", "Ranked 2nd", "Ranked 3rd")
+newtable
+
+newtesttable <- newtable
+newtesttable[1:9] <- c("Financial 24%", "Imposter syndrome 21%", "Family issues 24%",
+                       "1st generation med student 24%", "Financial 16%", "Imposter syndrome 21%",
+                       "Imposter syndrome 16%", "Lack of role models 16%", "1st Gen med student 22%"
+                       )
+newtesttable
+View(newtesttable)
+
 
 #Change order so descending by ranked first
   challengedescending <- order(challengerankmatrix[1, ], decreasing = FALSE) # Decrease = FALSE because the barplot function will flip it later
@@ -1344,22 +1671,24 @@ View(challengerankmatrix)
 x11()
 par(opar) # Reset par
 opar = par(oma = c(0,10,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
+colorscale <- colorspace::sequential_hcl(n = 3, palette = "YlOrRd")
 plota <- 
   barplot(
-        #challengeplot, #Use when making graph of all 9 options for challenges
-        testa, #USe when making graph with top 3 challenges and helpers in one
+        challengeplot, #Use when making graph of all 9 options for challenges
+        #testa, #USe when making graph with top 3 challenges and helpers in one
         beside = F, 
         main = challengetitle, 
         xlim = c(0,100),
-        xlab = "Percent of respondants %",
+        xlab = "Percent of respondents %",
         legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
         args.legend = list(x = 'bottomright', bty = 'n'),
-        names.arg = testplotchallengeoptions, # Use for combined graph
-        #names.arg = descendingchallengeoptions, # Use for graph of 9 challenges
+        #names.arg = testplotchallengeoptions, # Use for combined graph
+        names.arg = descendingchallengeoptions, # Use for graph of 9 challenges
         cex.main = 1.5,
         cex.names = 0.7,  #Decrease font size of x axis options
         cex.lab = 1.5,
         horiz = TRUE,
+        col = colorscale,
         las = 1,   #Makes all text vertical
         space = 0.66
   )
@@ -1523,7 +1852,7 @@ q7rank3 <- gsub("1", "", q7)
   q7rank3 <-sum(as.numeric(subset(q7rank3, !is.na(as.numeric(q7rank3)))))/3
   q7rank3
 
-q8 <- as.numeric(helpingfactors$Q15_0_1_RANK)
+q8 <- as.numeric(helpingfactors$Q15_0_8_RANK)
   q8 <- subset(q8, !is.na(q8))
   q8
 freq(q8)
@@ -1574,6 +1903,8 @@ helprankmatrix <- rbind(rank1, rank2, rank3)
   #Change data from n to a percentage
   denominator <- length(na.omit(ANAMSdata[3:nrow(ANAMSdata), 52]))
 helprankmatrix <- rbind(rank1, rank2, rank3) / denominator * 100
+helprankmatrix
+
 #Labels for graph
 helpingtitle <- c("What factors have helped you get\n to where you are today?")
 alleviatingfactorsoptions <- c("Outreach programs through\nmedical schools",
@@ -1584,9 +1915,14 @@ alleviatingfactorsoptions <- c("Outreach programs through\nmedical schools",
                                "Financial assistance via\nscholarships and grants",
                                "A sense of community\nin my medical school",
                                "A sense of community\nin my undergraduate school"
-                                )
+                                ) # In the order asked on Qualtrics
 
 
+#colnames(helprankmatrix) <- alleviatingfactorsoptions
+#View(helprankmatrix)
+
+#helprankmarix <- helprankmatrix * denominator / 100
+#View(helprankmatrix)
 
 #Change the order
 helpingdescending <- order(helprankmatrix[1, ], decreasing = FALSE)
@@ -1606,45 +1942,62 @@ alleviatingfactorsoptions
 x11()
 par(opar) # Reset par
 opar = par(oma = c(0,10,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
+colorscale <- colorspace::sequential_hcl(n = 3, palette = "YlOrRd")
 plotb <- barplot(
-        #helpplot, # USe for plot of 9
-        testb, # Use for combined graph
+        helpplot, # USe for plot of 9
+        #testb, # Use for combined graph
         beside = F, 
         main = helpingtitle, 
         xlim = c(0,100),
-        xlab = "Percent of respondants %",
+        xlab = "Percent of respondents %",
         legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
         args.legend = list(x = 'bottomright', bty = 'n'),
-        names.arg = testplothelpoptions, # use for combined plot
-        #names.arg = alleviatingfactorsoptions, Use for plot of 9
+        #names.arg = testplothelpoptions, # use for combined plot
+        names.arg = alleviatingfactorsoptions, #Use for plot of 9
         cex.main = 1.5,
         cex.lab = 1.5,
         cex.names = 0.7,  #Decrease font size of x axis options
         horiz = TRUE,
         las = 1,   #Makes all text vertical
-        space = 0.4
+        space = 0.4,
+        col = colorscale
         )
 par(opar) # Reset par
 opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
 par(opar) # Reset par
 
+testplotchallengeoptions
+
 #Now combine questions 25 and 26 into a single graph
 x11()
+colorscale <- colorspace::diverge_hcl(3, palette = "Blue-Red")
+colorscale <- colorspace::sequential_hcl(1:3, palette = "YlOrRd")
+
+  colorscale <- colorspace::sequential_hcl(n = 3, palette = "YlOrRd")
+
+  colorscale <- colorspace::sequential_hcl(3, palette = "Light Grays")
+  
+setEPS()
+postscript("Figure 2.eps")
+
 par(mfrow = c(2,1))
 opar = par(oma = c(0,5,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left, top, right
     plota <- 
       barplot(testa, 
               beside = F, 
-              main = challengetitle, 
+              #main = challengetitle, # This is what the survey asked
+              main = "Prominent Educational Barriers",
               xlim = c(0,100),
-              xlab = "Percent of respondants %",
+              xlab = "Percent of respondents %",
               legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
               args.legend = list(x = 'bottomright', bty = 'n'),
               names.arg = testplotchallengeoptions,
               cex.main = 1.5,
-              cex.names = 0.7,  #Decrease font size of x axis options
-              cex.lab = 1.2,
+              cex.names = 0.75,  #Decrease font size of x axis options
+              cex.lab = 0.9,
+              cex.axis = 0.75,
               horiz = TRUE,
+              col = colorscale,
               las = 1,   #Makes all text vertical
               space = 0.66
                     )
@@ -1652,21 +2005,25 @@ opar = par(oma = c(0,5,0,0)) #makes margins bigger -> c(b,l,t,r) -> bottom, left
     plotb <- 
       barplot(testb, 
                      beside = F, 
-                     main = helpingtitle, 
+                     #main = helpingtitle,# This is what the survey asked
+                     main = "Prominent Educational Facilitators",
                      xlim = c(0,100),
-                     xlab = "Percent of respondants %",
+                     xlab = "Percent of respondents %",
                      legend.text = c("Ranked 1st", "Ranked 2nd", "Ranked 3rd"), 
                      args.legend = list(x = 'bottomright', bty = 'n'),
                      names.arg = testplothelpoptions, 
-                     cex.main = 1.5,
-                     cex.lab = 1.2,
-                     cex.names = 0.7,  #Decrease font size of x axis options
+                     cex.main = 1.5, # Main title
+                     cex.lab = 0.9, # Axis labels
+                     cex.names = 0.75,  #Decrease font size of x axis options
+                     cex.axis = 0.75,
                      horiz = TRUE,
+                     col = colorscale,
                      las = 1,   #Makes all text vertical
                      space = 0.4
                   )
 opar =par(oma = c(0,0,0,0), mar = c(0,0,0,0), new = TRUE)
 par(mfrow = c(1,1))
+dev.off()
 
 #Q27 - Qualitative question
 table(stringdata[c(3:46),c(62)])
@@ -1676,6 +2033,8 @@ table(stringdata[,c(63)])
 freq(stringdata[,c(63)])
 freq(onlyaian[,c(63)])
 freq(aiancombo[,c(63)])
+freq(onlynativehc[,c(63)])
+freq(nativecommunity[,c(63)])
 
 piestring <- sort(table(stringdata[,c(63)]), decreasing = TRUE)
   piestring <- sort(table(onlyaian[,c(63)]), decreasing = TRUE) # Use for only AI/AN
@@ -1697,6 +2056,7 @@ total <- sum(neworder)
   total  
 #Setting graph parameters
 colors <- colorspace::sequential_hcl(11, palette = "Lajolla")
+colors <- colorspace::sequential_hcl(11, palette = "Light Grays")
 futureplans <- c("Family Medicine", "IM", "Peds", "Ob/Gyn",
                  "General Surgery", "Surgical sub-specialty",
                  "Other"
@@ -1715,10 +2075,14 @@ futureplans <- c("Family Medicine", "IM", "Peds", "Ob/Gyn",
                      "General Surgery", 
                      "Urology")
     
-    
+
+setEPS()        
+postscript("Figure 3.eps")
+
 x11()
-pie(piestring,
-  #neworder,
+pie(
+  #piestring,
+  neworder,
   main = "Future career plans:",
   #labels = paste0(futureplans, " ", round(100 * neworder / sum(neworder),0), "%"),
   labels = paste0(futureplans, " ", round(100 * piestring / sum(piestring),0), "%"),
@@ -1734,18 +2098,25 @@ pie(piestring,
   col = colors,
   #border = colors
     )
-
-pie(piestring)
+dev.off()
 
 #Q29 and Q30 - Future work plans - Bar plot chart of future career choices. 2 in one. Better than pie chart?
   #Q29 - IHS
     table(stringdata[c(3:46),c(64)])
     pie(table(stringdata[c(3:46),c(64)]),main = stringdata[c(1),c(64)])
     freq(stringdata[c(3:46),c(64)])
+    freq(onlyaian[,c(64)])
+    freq(onlynativehc[,c(64)])
+    freq(nativecommunity[,c(64)])
+    
+    
   #Q30 - A non-IHS Tribal healthcare site
     table(stringdata[c(3:46),c(65)])
     pie(table(stringdata[c(3:46),c(65)]),main = stringdata[c(1),c(65)])
     freq(stringdata[c(3:46),c(65)])
+    freq(onlyaian[,c(65)])
+    freq(onlynativehc[,c(65)])
+    freq(nativecommunity[,c(65)])
     
   #Remove those who selected full time for both questions 29 and 30
     fpcorrected <- stringdata[,64:65]
